@@ -1,0 +1,27 @@
+#!/bin/bash
+
+### This is a small helper script for generating and pulling out container certificates ###
+
+# Gernerate CA
+podman exec -it  elasticsearch_es01_1  /usr/share/elasticsearch/bin/elasticsearch-certutil ca --pem --out /tmp/fleet-ca.zip
+podman cp elasticsearch_es01_1:/tmp/fleet-ca.zip .
+unzip -o fleet-ca.zip -d fleet-ca/
+
+# Copy CA back into container
+podman cp fleet-ca/ca/ca.crt elasticsearch_es01_1:/tmp/
+podman cp fleet-ca/ca/ca.key elasticsearch_es01_1:/tmp/
+
+# Generate the signed certificate
+podman exec -it elasticsearch_es01_1 /usr/share/elasticsearch/bin/elasticsearch-certutil cert \
+  --name fleet-server \
+  --ca-cert /tmp/ca.crt \
+  --ca-key /tmp/ca.key \
+  --pem \
+  --out /tmp/fleet-server-certs.zip
+
+# Extract signed Certs
+podman cp elasticsearch_es01_1:/tmp/fleet-server-certs.zip .
+unzip -o fleet-server-certs.zip -d fleet-server-certs/
+
+# Extract elasticsearch CA cert
+podman cp elasticsearch_es01_1://usr/share/elasticsearch/config/certs/ca/ca.crt ./
