@@ -1,0 +1,63 @@
+#
+# Kibana dashboard container.
+#
+# Replaces the docker-compose "kibana" service.
+#
+# Depends on elastic-setup-passwords completing, which transitively
+# guarantees that es01 is healthy AND the kibana_system password is set.
+#
+
+[Unit]
+Description=Kibana 9.5.5 Dashboard
+# setup-passwords completing implies es01 is healthy + password is configured
+After=elastic-setup-passwords.service
+Requires=elastic-setup-passwords.service
+
+[Container]
+# Wolfi variant, matching compose
+Image=docker.elastic.co/kibana/kibana-wolfi:9.5.5
+ContainerName=kibana
+
+# ELASTICSEARCH_PASSWORD (= KIBANA_PASSWORD) is loaded from the env file
+EnvironmentFile=/etc/containers/systemd/users/elastic.env
+
+# ---- Kibana configuration ----
+Environment=SERVERNAME=kibana
+Environment=ELASTICSEARCH_HOSTS=https://es01:9200
+Environment=ELASTICSEARCH_USERNAME=kibana_system
+# Note: ELASTICSEARCH_PASSWORD comes from elastic.env (must match KIBANA_PASSWORD)
+Environment=ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+
+# Encryption keys for Kibana saved objects, reporting, and security
+# Set these to real 32+ character random strings in production
+Environment=XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=
+Environment=XPACK_REPORTING_ENCRYPTIONKEY=
+Environment=XPACK_SECURITY_ENCRYPTIONKEY=
+
+# ---- Volumes ----
+Volume=elastic-certs.volume:/usr/share/kibana/config/certs
+Volume=elastic-kibanadata.volume:/usr/share/kibana/data
+
+# ---- Network ----
+Network=elastic.network
+
+# ---- Port mapping (was ${KIBANA_PORT}:5601 in compose) ----
+PublishPort=5601:5601
+
+# ---- Resource limits ----
+PodmanArgs=--memory 1g
+
+# ---- Health check ----
+HealthCmd=curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'
+HealthInterval=10s
+HealthTimeout=10s
+HealthRetries=120
+
+[Service]
+Restart=on-failure
+RestartSec=10s
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target
+

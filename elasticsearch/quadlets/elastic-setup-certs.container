@@ -1,0 +1,60 @@
+#
+# Oneshot init container — generates TLS certificates for the Elastic Stack.
+#
+# This replaces the FIRST half of the docker-compose "setup" service.
+# The original setup container did two things:
+#   1. Generate CA + node certs (this container)
+#   2. Wait for es01 and set kibana_system password (elastic-setup-passwords)
+#
+# We split it because es01 can't start without certs, but the password
+# setup can't run until es01 is healthy — a circular dependency if kept
+# in one container. Splitting breaks the cycle cleanly.
+#
+# Dependency chain:
+#   elastic-setup-certs (oneshot)
+#     → elastic-es01 (long-running, Notify=healthy)
+#       → elastic-setup-passwords (oneshot)
+#         → elastic-kibana (long-running)
+#
+
+[Unit]
+Description=Elasticsearch TLS Certificate Generator (oneshot)
+
+[Container]
+# Same image as the compose "setup" service (standard, not -wolfi)
+Image=docker.elastic.co/elasticsearch/elasticsearch:9.5.5
+ContainerName=elastic-setup-certs
+
+# Secrets for the password validation check in the script
+EnvironmentFile=/etc/containers/systemd/users/elastic.env
+
+# Certs volume — this is where generated certs are written
+Volume=elastic-certs.volume:/usr/share/elasticsearch/config/certs
+
+# Bind-mount the setup script (read-only, SELinux private label)
+Volume=/etc/containers/systemd/users/elastic-scripts/setup-certs.sh:/scripts/setup-certs.sh:ro,Z
+
+# Network is needed so cert DNS names (es01, kibana) resolve correctly
+Network=elastic.network
+
+# Run as root (uid 0) — required for chown/chmod on the certs
+# In rootless Podman, this maps to your user on the host (no privilege escalation)
+# Take a moment to appreciate the security of rootless containerization.
+User=0
+
+# Override the container's default entrypoint to run our script
+Exec=/bin/bash /scripts/setup-certs.sh
+
+[Service]
+# oneshot = systemd waits for the process to exit before marking it "active"
+Type=oneshot
+
+# Keep the service in "active" state after exit so dependents can start
+RemainAfterExit=yes
+
+# 5 minutes — cert generation + unzip is fast, but image pull could be slow
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target
+

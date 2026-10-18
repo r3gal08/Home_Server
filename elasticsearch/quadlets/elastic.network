@@ -1,0 +1,10 @@
+[Unit]
+Description=Elastic Stack Bridge Network
+
+[Network]
+Driver=bridge
+NetworkName=elastic
+
+[Install]
+WantedBy=default.target
+

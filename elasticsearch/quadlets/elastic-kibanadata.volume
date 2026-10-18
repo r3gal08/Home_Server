@@ -1,0 +1,9 @@
+[Unit]
+Description=Kibana Data Volume
+
+[Volume]
+VolumeName=elastic-kibanadata
+
+[Install]
+WantedBy=default.target
+

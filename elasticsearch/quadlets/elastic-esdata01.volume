@@ -1,0 +1,9 @@
+[Unit]
+Description=Elasticsearch Data Volume
+
+[Volume]
+VolumeName=elastic-esdata01
+
+[Install]
+WantedBy=default.target
+

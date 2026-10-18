@@ -1,0 +1,9 @@
+[Unit]
+Description=Elastic Stack TLS Certificates Volume
+
+[Volume]
+VolumeName=elastic-certs
+
+[Install]
+WantedBy=default.target
+

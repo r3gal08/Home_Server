@@ -1,0 +1,92 @@
+#
+# Elasticsearch single-node container.
+#
+# Replaces the docker-compose "es01" service.
+#
+# Key differences from compose:
+#   - depends_on setup (healthy) → After/Requires elastic-setup-certs.service
+#   - mem_limit → PodmanArgs --memory
+#   - ulimits.memlock → PodmanArgs --ulimit
+#   - environment vars with ${VAR} substitution → hardcoded values
+#     (Quadlets can't do runtime variable substitution in Environment= lines)
+#   - Notify=healthy → systemd considers this service "started" only when
+#     the health check passes, so dependents (setup-passwords) wait properly
+#
+
+[Unit]
+Description=Elasticsearch 9.5.5 (single node, TLS)
+# Wait for certs to be generated before starting
+After=elastic-setup-certs.service
+Requires=elastic-setup-certs.service
+
+[Container]
+# Uses the wolfi variant, matching the original compose
+Image=docker.elastic.co/elasticsearch/elasticsearch-wolfi:9.5.5
+ContainerName=es01
+
+# Secrets (ELASTIC_PASSWORD is read by Elasticsearch on startup)
+EnvironmentFile=/etc/containers/systemd/users/elastic.env
+
+# ---- Elasticsearch configuration (was environment: in compose) ----
+Environment=node.name=es01
+Environment=cluster.name=main-cluster
+Environment=discovery.type=single-node
+Environment=bootstrap.memory_lock=true
+
+# TLS for HTTP API
+Environment=xpack.security.enabled=true
+Environment=xpack.security.http.ssl.enabled=true
+Environment=xpack.security.http.ssl.key=certs/es01/es01.key
+Environment=xpack.security.http.ssl.certificate=certs/es01/es01.crt
+Environment=xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+
+# TLS for inter-node transport
+Environment=xpack.security.transport.ssl.enabled=true
+Environment=xpack.security.transport.ssl.key=certs/es01/es01.key
+Environment=xpack.security.transport.ssl.certificate=certs/es01/es01.crt
+Environment=xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+Environment=xpack.security.transport.ssl.verification_mode=certificate
+
+# License type (was ${LICENSE} in compose, hardcoded here)
+Environment=xpack.license.self_generated.type=basic
+
+# ---- Volumes ----
+Volume=elastic-certs.volume:/usr/share/elasticsearch/config/certs
+Volume=elastic-esdata01.volume:/usr/share/elasticsearch/data
+
+# ---- Network ----
+Network=elastic.network
+
+# ---- Port mapping (was ${ES_PORT}:9200 in compose) ----
+PublishPort=9200:9200
+
+# ---- Resource limits ----
+# --memory replaces mem_limit (1 GiB)
+# --ulimit replaces ulimits.memlock (unlimited, required for ES memory locking)
+PodmanArgs=--memory 2g --ulimit memlock=-1:-1
+
+# ---- Health check ----
+# Identical to the compose healthcheck — checks for the auth-required response
+HealthCmd=curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'
+HealthInterval=10s
+HealthTimeout=10s
+HealthRetries=120
+HealthStartPeriod=30s
+
+# Notify=healthy tells Podman to signal systemd (sd_notify READY=1) ONLY after
+# the health check passes. This means dependent services with After= won't start
+# until Elasticsearch is actually accepting connections — not just when the
+# container process has spawned.
+Notify=healthy
+
+[Service]
+Restart=on-failure
+RestartSec=10s
+
+# ES can be slow to start (JVM warmup, index recovery, first-boot setup)
+# 15 minutes accommodates even large clusters or cold starts
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target
+
