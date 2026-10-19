@@ -27,6 +27,7 @@ ContainerName=es01
 # Secrets (ELASTIC_PASSWORD is read by Elasticsearch on startup)
 EnvironmentFile=/etc/containers/systemd/users/elastic.env
 
+# TODO: Add to elasticsearch.yml
 # ---- Elasticsearch configuration (was environment: in compose) ----
 Environment=node.name=es01
 Environment=cluster.name=main-cluster

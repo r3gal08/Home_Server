@@ -31,8 +31,8 @@ EnvironmentFile=/etc/containers/systemd/users/elastic.env
 # Certs volume — this is where generated certs are written
 Volume=elastic-certs.volume:/usr/share/elasticsearch/config/certs
 
-# Bind-mount the setup script (read-only, SELinux private label)
-Volume=/etc/containers/systemd/users/elastic-scripts/setup-certs.sh:/scripts/setup-certs.sh:ro,Z
+# Bind-mount the setup script (read-only; pre-labeled with container_file_t)
+Volume=/etc/containers/systemd/users/elastic-scripts/setup-certs.sh:/scripts/setup-certs.sh:ro
 
 # Network is needed so cert DNS names (es01, kibana) resolve correctly
 Network=elastic.network

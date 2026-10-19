@@ -54,7 +54,9 @@ cp -v "${SCRIPT_DIR}/elastic-setup-certs.container"     "${QUADLET_DIR}/"
 cp -v "${SCRIPT_DIR}/elastic-es01.container"            "${QUADLET_DIR}/"
 cp -v "${SCRIPT_DIR}/elastic-setup-passwords.container" "${QUADLET_DIR}/"
 cp -v "${SCRIPT_DIR}/elastic-kibana.container"          "${QUADLET_DIR}/"
-chmod 644 "${QUADLET_DIR}"/elastic*.{container,volume,network}
+cp -v "${SCRIPT_DIR}/kibana.yml"                        "${QUADLET_DIR}/"
+chmod 644 "${QUADLET_DIR}"/elastic*.{container,volume,network} "${QUADLET_DIR}/kibana.yml"
+chcon -t container_file_t "${QUADLET_DIR}/kibana.yml" 2>/dev/null || true
 
 # Copy environment file (don't overwrite if it already exists with passwords)
 if [ -f "${QUADLET_DIR}/elastic.env" ]; then
@@ -68,17 +70,30 @@ fi
 chown "root:${TARGET_USER}" "${QUADLET_DIR}/elastic.env"
 chmod 640 "${QUADLET_DIR}/elastic.env"
 
-# Copy and mark scripts executable
+# Copy and mark scripts executable, set SELinux label for container access
 echo ""
 echo "  Copying helper scripts..."
 cp -v "${SCRIPT_DIR}/scripts/setup-certs.sh"         "${SCRIPTS_DIR}/"
 cp -v "${SCRIPT_DIR}/scripts/setup-passwords.sh"     "${SCRIPTS_DIR}/"
 chmod 755 "${SCRIPTS_DIR}"/*.sh
+chown -R "${TARGET_USER}:${TARGET_USER}" "${SCRIPTS_DIR}"
+# Pre-label scripts with container_file_t so rootless containers can read them without lsetxattr errors
+chcon -R -t container_file_t "${SCRIPTS_DIR}" 2>/dev/null || true
 
 # Enable lingering so user services start at host boot
 echo ""
 echo "  Enabling loginctl lingering for ${TARGET_USER}..."
 loginctl enable-linger "${TARGET_USER}"
+
+# Enable cgroup delegation so rootless Podman can manage cgroup resources
+echo ""
+echo "  Enabling cgroup delegation for user@.service..."
+mkdir -p /etc/systemd/system/user@.service.d
+cat > /etc/systemd/system/user@.service.d/delegate.conf <<'DELEGATE'
+[Service]
+Delegate=yes
+DELEGATE
+systemctl daemon-reload
 
 # Reload systemd user daemon for TARGET_USER
 echo ""

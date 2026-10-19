@@ -21,13 +21,7 @@ ContainerName=kibana
 # ELASTICSEARCH_PASSWORD (= KIBANA_PASSWORD) is loaded from the env file
 EnvironmentFile=/etc/containers/systemd/users/elastic.env
 
-# ---- Kibana configuration ----
-Environment=SERVERNAME=kibana
-Environment=ELASTICSEARCH_HOSTS=https://es01:9200
-Environment=ELASTICSEARCH_USERNAME=kibana_system
-# Note: ELASTICSEARCH_PASSWORD comes from elastic.env (must match KIBANA_PASSWORD)
-Environment=ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
-
+# TODO: Add to kibana.yml
 # Encryption keys for Kibana saved objects, reporting, and security
 # Set these to real 32+ character random strings in production
 Environment=XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=
@@ -35,7 +29,8 @@ Environment=XPACK_REPORTING_ENCRYPTIONKEY=
 Environment=XPACK_SECURITY_ENCRYPTIONKEY=
 
 # ---- Volumes ----
-Volume=elastic-certs.volume:/usr/share/kibana/config/certs
+Volume=/etc/containers/systemd/users/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+Volume=elastic-certs.volume:/usr/share/kibana/config/certs:ro
 Volume=elastic-kibanadata.volume:/usr/share/kibana/data
 
 # ---- Network ----
