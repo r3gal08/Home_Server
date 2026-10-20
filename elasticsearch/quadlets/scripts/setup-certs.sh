@@ -38,12 +38,14 @@ instances:
       - localhost
     ip:
       - 127.0.0.1
+      - 192.168.2.56
   - name: kibana
     dns:
       - kibana
       - localhost
     ip:
       - 127.0.0.1
+      - 192.168.2.56
 INSTANCES
 
   bin/elasticsearch-certutil cert --silent --pem \

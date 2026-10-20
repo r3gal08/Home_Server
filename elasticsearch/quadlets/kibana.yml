@@ -1,18 +1,22 @@
 server.name: kibana
 server.host: "0.0.0.0"
 
+
 # Elasticsearch Connection
 elasticsearch.hosts: [ "https://es01:9200" ]
 elasticsearch.username: "kibana_system"
 elasticsearch.ssl.certificateAuthorities: [ "/usr/share/kibana/config/certs/ca/ca.crt" ]
 
 
-# Preconfigured Fleet Output to guarantee connections use https://es01:9200 with the trusted CA
+# TODO: Right now the fleet-server expects ca.cert to be in this /usr/share/kibana/config/certs/ca/ca.crt location.  
+# This is not ideal as I need to manually create this and copy it over, but it works for now.  We should fix this in the future. 
+# I think I should be able to update ssl.certificateAuthorities to point to a new location if wanted.
+# Preconfigured Fleet Output to guarantee connections use https://192.168.2.56:9200 with the trusted CA
 xpack.fleet.outputs:
   - id: fleet-default-output
     name: default
     type: elasticsearch
-    hosts: [ "https://es01:9200" ]
+    hosts: [ "https://192.168.2.56:9200" ]
     is_default: true
     is_default_monitoring: true
     ssl.certificate_authorities: [ "/usr/share/kibana/config/certs/ca/ca.crt" ]

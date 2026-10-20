@@ -1,18 +1,20 @@
 #!/bin/bash
 
-### This is a helper script to install Fleet Server. It uses certs pulled from elastic_cert_gen ###
+# This is a helper script to install Fleet Server. It uses certs pulled from elastic_cert_gen
+# Typically these commands are generated and given to you within Kibana when creating a fleet server, but stll keeping one here for reference  
 
 curl -L -O https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-9.5.5-linux-x86_64.tar.gz
 tar xzvf elastic-agent-9.5.5-linux-x86_64.tar.gz
-
 cd elastic-agent-9.5.5-linux-x86_64
-sudo ./elastic-agent install --url=https://192.168.2.56:8220 \
+
+# Need to be root...
+./elastic-agent install --url=https://192.168.2.56:8220 \
   --fleet-server-es=https://192.168.2.56:9200 \
-  --fleet-server-service-token=AAEAAWVsYXN0aWMvZmxlZXQtc2VydmVyL3Rva2VuLTE3OTE4NTU0NDg1MDA6cFJ0bndwaEhRaTZObnQ3ZEZNQkM3UQ \
+  --fleet-server-service-token= \
   --fleet-server-policy=fleet-server-policy \
-  --fleet-server-cert=/home/admin/containers_stb_qublets/elasticsearch/fleet-server-certs/fleet-server/fleet-server.crt \
-  --fleet-server-cert-key=/home/admin/containers_stb_qublets/elasticsearch/fleet-server-certs/fleet-server/fleet-server.key \
-  --certificate-authorities=/home/admin/containers_stb_qublets/elasticsearch/fleet-ca/ca/ca.crt \
-  --fleet-server-es-ca=/home/admin/containers_stb_qublets/elasticsearch/ca.crt \
+  --certificate-authorities=$PWD/fleet-server-certs/fleet-server/fleet-server.crt \
+  --fleet-server-es-ca=$PWD/ca.crt \
+  --fleet-server-cert=$PWD/fleet-server-certs/fleet-server/fleet-server.crt \
+  --fleet-server-cert-key=$PWD/fleet-server-certs/fleet-server/fleet-server.key \
   --fleet-server-port=8220 \
   --install-servers
