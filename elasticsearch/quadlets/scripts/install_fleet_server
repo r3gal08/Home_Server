@@ -3,8 +3,17 @@
 # This is a helper script to install Fleet Server. It uses certs pulled from elastic_cert_gen
 # Typically these commands are generated and given to you within Kibana when creating a fleet server, but stll keeping one here for reference  
 
-curl -L -O https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-9.5.5-linux-x86_64.tar.gz
-tar xzvf elastic-agent-9.5.5-linux-x86_64.tar.gz
+
+TAR_FILE="elastic-agent-9.5.5-linux-x86_64.tar.gz"
+
+if [ ! -f "$TAR_FILE" ]; then
+    echo "Downloading $TAR_FILE..."
+    curl -L -O "https://artifacts.elastic.co/downloads/beats/elastic-agent/$TAR_FILE"
+else
+    echo "$TAR_FILE already exists, skipping download."
+fi
+
+tar xzvf "$TAR_FILE"
 cd elastic-agent-9.5.5-linux-x86_64
 
 # Need to be root...

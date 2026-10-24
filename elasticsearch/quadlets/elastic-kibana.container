@@ -21,7 +21,7 @@ ContainerName=kibana
 # ELASTICSEARCH_PASSWORD (= KIBANA_PASSWORD) is loaded from the env file
 EnvironmentFile=/etc/containers/systemd/users/elastic.env
 
-# TODO: Add to kibana.yml
+# TODO: Add to kibana.yml and auto-gen
 # Encryption keys for Kibana saved objects, reporting, and security
 # Set these to real 32+ character random strings in production
 Environment=XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=

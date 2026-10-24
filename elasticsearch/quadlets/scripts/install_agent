@@ -1,0 +1,14 @@
+#!/bin/bash
+
+TAR_FILE="elastic-agent-9.5.5-linux-x86_64.tar.gz"
+
+if [ ! -f "$TAR_FILE" ]; then
+    echo "Downloading $TAR_FILE..."
+    curl -L -O "https://artifacts.elastic.co/downloads/beats/elastic-agent/$TAR_FILE"
+else
+    echo "$TAR_FILE already exists, skipping download."
+fi
+
+tar xzvf "$TAR_FILE"
+cd elastic-agent-9.5.5-linux-x86_64
+sudo ./elastic-agent install --url=https://192.168.2.56:8220 --enrollment-token= --insecure
