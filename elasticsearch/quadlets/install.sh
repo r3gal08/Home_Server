@@ -20,6 +20,7 @@ TARGET_USER="${1:-admin}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 QUADLET_DIR="/etc/containers/systemd/users"
 SCRIPTS_DIR="${QUADLET_DIR}/elastic-scripts"
+FLEET_CERTS_DIR="${QUADLET_DIR}/fleet-certs"
 
 # Must run with sudo / root to write to /etc/
 if [ "$EUID" -ne 0 ]; then
@@ -39,10 +40,14 @@ echo "==> Installing Elastic Stack Quadlets to /etc/ for user: ${TARGET_USER}"
 echo "    Source:      ${SCRIPT_DIR}"
 echo "    Quadlet dir: ${QUADLET_DIR}"
 echo "    Scripts dir: ${SCRIPTS_DIR}"
+echo "    Fleet certs: ${FLEET_CERTS_DIR}"
 echo ""
 
 # Create directories under /etc/
-mkdir -p "${QUADLET_DIR}" "${SCRIPTS_DIR}"
+mkdir -p "${QUADLET_DIR}" "${SCRIPTS_DIR}" "${FLEET_CERTS_DIR}"
+chown -R "${TARGET_USER}:${TARGET_USER}" "${FLEET_CERTS_DIR}"
+chmod 755 "${FLEET_CERTS_DIR}"
+chcon -R -t container_file_t "${FLEET_CERTS_DIR}" 2>/dev/null || true
 
 # Copy quadlet unit files
 echo "  Copying quadlet files to ${QUADLET_DIR}..."

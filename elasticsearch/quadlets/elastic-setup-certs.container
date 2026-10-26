@@ -37,6 +37,9 @@ Volume=/etc/containers/systemd/users/elastic-scripts/setup-certs.sh:/scripts/set
 # Mount kibana.yml so the script can auto-inject things in the future....
 Volume=/etc/containers/systemd/users/kibana.yml:/kibana-config/kibana.yml
 
+# Destination on the hypervisor (host) to export Fleet Server & CA certificates
+Volume=/etc/containers/systemd/users/fleet-certs:/fleet-certs:Z
+
 # Network is needed so cert DNS names (es01, kibana) resolve correctly
 Network=elastic.network
 

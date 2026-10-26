@@ -9,14 +9,18 @@ elasticsearch/quadlets/
 ├── elastic-esdata01.volume            # Elasticsearch data volume
 ├── elastic-kibanadata.volume          # Kibana data volume
 ├── elastic.env                        # Shared secrets (passwords)
-├── elastic-setup-certs.container      # Oneshot: generates TLS certs
+├── elastic-setup-certs.container      # Oneshot: generates TLS certs & exports fleet certs
 ├── elastic-es01.container             # Elasticsearch (long-running)
 ├── elastic-setup-passwords.container  # Oneshot: sets kibana_system password
 ├── elastic-kibana.container           # Kibana dashboard (long-running)
+├── kibana.yml                         # Kibana configuration
 ├── scripts/
-│   ├── setup-certs.sh                 # Cert generation logic
-│   └── setup-passwords.sh            # Password setup logic
-└── install.sh                         # Copies everything to ~/.config/containers/systemd/
+│   ├── setup-certs.sh                 # Cert generation & host export logic
+│   ├── setup-passwords.sh             # Password setup logic
+│   ├── install_fleet_server           # Fleet server installer helper
+│   ├── install_agent                  # Elastic agent installer helper
+│   └── elastic_cert_gen               # (Deprecated) Manual cert extraction fallback
+└── install.sh                         # Installs Quadlets into /etc/containers/systemd/users/
 ```
 
 ## How the Compose Maps to Quadlets

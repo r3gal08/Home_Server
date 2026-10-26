@@ -27,7 +27,7 @@ else
   echo "CA already exists, skipping."
 fi
 
-# ------- Generate node & kibana certificates -------
+# ------- Generate node, kibana & fleet-server certificates -------
 if [ ! -f config/certs/certs.zip ]; then
   echo "Creating instance certificates..."
   cat > config/certs/instances.yml <<'INSTANCES'
@@ -46,6 +46,13 @@ instances:
     ip:
       - 127.0.0.1
       - 192.168.2.56
+  - name: fleet-server
+    dns:
+      - fleet-server
+      - localhost
+    ip:
+      - 127.0.0.1
+      - 192.168.2.56
 INSTANCES
 
   bin/elasticsearch-certutil cert --silent --pem \
@@ -59,11 +66,23 @@ else
   echo "Instance certificates already exist, skipping."
 fi
 
-# ------- Set permissions -------
+# ------- Set container permissions -------
 echo "Setting file permissions..."
 chown -R root:root config/certs
-find . -type d -exec chmod 750 {} \;
-find . -type f -exec chmod 640 {} \;
+find config/certs -type d -exec chmod 750 {} \;
+find config/certs -type f -exec chmod 640 {} \;
+
+# ------- Export Fleet Server & CA certificates to host (hypervisor) -------
+if [ -d /fleet-certs ]; then
+  echo "Exporting fleet-server and CA certificates to host..."
+  mkdir -p /fleet-certs/fleet-server
+  cp -f config/certs/ca/ca.crt /fleet-certs/ca.crt
+  cp -f config/certs/fleet-server/fleet-server.crt /fleet-certs/fleet-server/fleet-server.crt
+  cp -f config/certs/fleet-server/fleet-server.key /fleet-certs/fleet-server/fleet-server.key
+  chmod 644 /fleet-certs/ca.crt /fleet-certs/fleet-server/fleet-server.crt
+  chmod 600 /fleet-certs/fleet-server/fleet-server.key
+  echo "Export complete: ca.crt, fleet-server.crt, and fleet-server.key copied to host."
+fi
 
 echo "Certificate setup complete!"
 

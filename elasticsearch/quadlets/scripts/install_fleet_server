@@ -1,8 +1,17 @@
 #!/bin/bash
 
-# This is a helper script to install Fleet Server. It uses certs pulled from elastic_cert_gen
-# Typically these commands are generated and given to you within Kibana when creating a fleet server, but stll keeping one here for reference  
+# This is a helper script to install Fleet Server on the host (hypervisor).
+# It uses certs generated automatically by setup-certs.sh and exported to the host.
+# Typically these commands are generated and given to you within Kibana when creating a fleet server, but still keeping one here for reference.
+# This script needs to be ran as root. TODO: Add a check for root user and exit if not root.
 
+FLEET_CERTS_DIR="${1:-/etc/containers/systemd/users/fleet-certs}"
+
+if [ ! -f "${FLEET_CERTS_DIR}/ca.crt" ] || [ ! -f "${FLEET_CERTS_DIR}/fleet-server/fleet-server.crt" ]; then
+    echo "ERROR: Certificates not found in ${FLEET_CERTS_DIR}"
+    echo "Ensure elastic-setup-certs has run and exported certificates to the host."
+    exit 1
+fi
 
 TAR_FILE="elastic-agent-9.5.5-linux-x86_64.tar.gz"
 
@@ -21,9 +30,9 @@ cd elastic-agent-9.5.5-linux-x86_64
   --fleet-server-es=https://192.168.2.56:9200 \
   --fleet-server-service-token= \
   --fleet-server-policy=fleet-server-policy \
-  --certificate-authorities=$PWD/fleet-server-certs/fleet-server/fleet-server.crt \
-  --fleet-server-es-ca=$PWD/ca.crt \
-  --fleet-server-cert=$PWD/fleet-server-certs/fleet-server/fleet-server.crt \
-  --fleet-server-cert-key=$PWD/fleet-server-certs/fleet-server/fleet-server.key \
+  --certificate-authorities="${FLEET_CERTS_DIR}/ca.crt" \
+  --fleet-server-es-ca="${FLEET_CERTS_DIR}/ca.crt" \
+  --fleet-server-cert="${FLEET_CERTS_DIR}/fleet-server/fleet-server.crt" \
+  --fleet-server-cert-key="${FLEET_CERTS_DIR}/fleet-server/fleet-server.key" \
   --fleet-server-port=8220 \
   --install-servers
