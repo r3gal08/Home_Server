@@ -1,0 +1,8 @@
+[Unit]
+Description=Plex Metadata and Configuration Volume
+
+[Volume]
+VolumeName=plex-config
+
+[Install]
+WantedBy=default.target

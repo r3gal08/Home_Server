@@ -1,0 +1,51 @@
+#
+# Plex Media Server container.
+#
+# Key architectural notes:
+#   - Network: Uses host networking instead of a bridge network. This is required 
+#     for Plex's local network discovery (GDM) and DLNA to function correctly on 
+#     AV receivers and Chromecasts.
+#   - Transcoding: The i5-12400F lacks QuickSync, so the PodmanArgs block explicitly 
+#     passes the hypervisor render device through for hardware acceleration.
+#
+
+[Unit]
+Description=Plex Media Server
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=lscr.io/linuxserver/plex:latest
+ContainerName=plex
+
+# ---- Environment Variables ----
+# PUID/PGID map the container's internal execution user to your Rocky Linux host user.
+# Replace 1000 with the output of `id -u` and `id -g` for your standard user.
+Environment=PUID=1000
+Environment=PGID=1000
+Environment=TZ=America/Halifax
+Environment=VERSION=docker
+Environment=PLEX_CLAIM=<Can be generated here: https://plex.tv/claim>
+
+# ---- Volumes ----
+# Config mapped to the named volume for persistence
+Volume=plex-config.volume:/config
+
+# Media mapped as read-only with shared SELinux labeling to protect host files
+Volume=/media/:/media:ro,z
+
+# ---- Network ----
+# Bypasses bridge networking to sit directly on the host interface
+Network=host
+
+# ---- Resource limits & Hardware Acceleration ----
+# Passes the Intel integrated GPU for QuickSync hardware transcoding
+PodmanArgs=--device=/dev/dri:/dev/dri --memory 4g
+
+[Service]
+Restart=on-failure
+RestartSec=10s
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target
