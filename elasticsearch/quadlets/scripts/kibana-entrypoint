@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+
+CONFIG_FILE="/usr/share/kibana/config/kibana.yml"
+
+# Generate encryption keys if they are not already defined in kibana.yml
+if ! grep -q "xpack.security.encryptionKey" "$CONFIG_FILE"; then
+  echo "Encryption keys not found in $CONFIG_FILE. Generating with kibana-encryption-keys..."
+  
+  echo "" >> "$CONFIG_FILE"
+  echo "# Automatically generated encryption keys" >> "$CONFIG_FILE"
+  /usr/share/kibana/bin/kibana-encryption-keys generate --quiet >> "$CONFIG_FILE"
+  
+  echo "Kibana encryption keys successfully appended to $CONFIG_FILE."
+else
+  echo "Kibana encryption keys already configured in $CONFIG_FILE."
+fi
+
+# Execute the default Kibana container entrypoint
+exec /usr/local/bin/kibana-docker "$@"

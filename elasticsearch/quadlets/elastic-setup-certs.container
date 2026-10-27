@@ -34,9 +34,6 @@ Volume=elastic-certs.volume:/usr/share/elasticsearch/config/certs
 # Bind-mount the setup script (read-only; pre-labeled with container_file_t)
 Volume=/etc/containers/systemd/users/elastic-scripts/setup-certs.sh:/scripts/setup-certs.sh:ro
 
-# Mount kibana.yml so the script can auto-inject things in the future....
-Volume=/etc/containers/systemd/users/kibana.yml:/kibana-config/kibana.yml
-
 # Destination on the hypervisor (host) to export Fleet Server & CA certificates
 Volume=/etc/containers/systemd/users/fleet-certs:/fleet-certs:Z
 

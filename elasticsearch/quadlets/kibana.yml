@@ -1,3 +1,5 @@
+# Note: Encryption keys xpack encryption keys are automatically generated and appended here on first startup by kibana-encryption-keys entry point script
+
 server.name: kibana
 server.host: "0.0.0.0"
 
@@ -21,3 +23,8 @@ xpack.fleet.outputs:
     is_default_monitoring: true
     ssl.certificate_authorities: [ "/usr/share/kibana/config/certs/ca/ca.crt" ]
 
+xpack.fleet.fleetServerHosts:
+  - id: fleet-server-default
+    name: default
+    host_urls: [ "https://192.168.2.56:8220" ]
+    is_default: true

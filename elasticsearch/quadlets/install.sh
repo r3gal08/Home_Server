@@ -60,7 +60,15 @@ cp -v "${SCRIPT_DIR}/elastic-es01.container"            "${QUADLET_DIR}/"
 cp -v "${SCRIPT_DIR}/elastic-setup-passwords.container" "${QUADLET_DIR}/"
 cp -v "${SCRIPT_DIR}/elastic-kibana.container"          "${QUADLET_DIR}/"
 cp -v "${SCRIPT_DIR}/kibana.yml"                        "${QUADLET_DIR}/"
-chmod 644 "${QUADLET_DIR}"/elastic*.{container,volume,network} "${QUADLET_DIR}/kibana.yml"
+
+# Permission quadlet files
+chmod 640 "${QUADLET_DIR}"/elastic*.{container,volume,network}
+chown "root:${TARGET_USER}" "${QUADLET_DIR}"/elastic*.{container,volume,network}
+
+# Permission kibana.yml so only root and TARGET_USER can read secrets.
+# TODO: Not entirely sure why global read is needed for kibana.yml. Container fails to write without it... Maybe SELinux context issue? Need to investigate further.
+chmod 664 "${QUADLET_DIR}/kibana.yml"
+chown "${TARGET_USER}:${TARGET_USER}" "${QUADLET_DIR}/kibana.yml"
 chcon -t container_file_t "${QUADLET_DIR}/kibana.yml" 2>/dev/null || true
 
 # Copy environment file (don't overwrite if it already exists with passwords)
@@ -80,6 +88,7 @@ echo ""
 echo "  Copying helper scripts..."
 cp -v "${SCRIPT_DIR}/scripts/setup-certs.sh"         "${SCRIPTS_DIR}/"
 cp -v "${SCRIPT_DIR}/scripts/setup-passwords.sh"     "${SCRIPTS_DIR}/"
+cp -v "${SCRIPT_DIR}/scripts/kibana-entrypoint"   "${SCRIPTS_DIR}/"
 chmod 755 "${SCRIPTS_DIR}"/*.sh
 chown -R "${TARGET_USER}:${TARGET_USER}" "${SCRIPTS_DIR}"
 # Pre-label scripts with container_file_t so rootless containers can read them without lsetxattr errors
@@ -110,26 +119,3 @@ else
   echo "  (User session not active yet; daemon will reload automatically when session starts)"
 fi
 
-echo ""
-echo "╔══════════════════════════════════════════════════════════════════════════════════╗"
-echo "║                                NEXT STEPS                                        ║"
-echo "╠══════════════════════════════════════════════════════════════════════════════════╣"
-echo "║                                                                                  ║"
-echo "║  1. Configure passwords in /etc:                                                 ║"
-echo "║     sudo \$EDITOR ${QUADLET_DIR}/elastic.env                                      ║"
-echo "║                                                                                  ║"
-echo "║  2. Start the stack (from root or via sudo):                                     ║"
-echo "║     sudo systemctl --machine=${TARGET_USER}@ --user start elastic-kibana         ║"
-echo "║                                                                                  ║"
-echo "║     OR as the ${TARGET_USER} user directly:                                      ║"
-echo "║     systemctl --user start elastic-kibana                                        ║"
-echo "║                                                                                  ║"
-echo "║  3. Check status:                                                                ║"
-echo "║     sudo systemctl --machine=${TARGET_USER}@ --user status elastic-es01          ║"
-echo "║     sudo systemctl --machine=${TARGET_USER}@ --user status elastic-kibana        ║"
-echo "║                                                                                  ║"
-echo "║  4. View logs:                                                                   ║"
-echo "║     sudo journalctl --machine=${TARGET_USER}@ --user -u elastic-es01 -f          ║"
-echo "║     sudo journalctl --machine=${TARGET_USER}@ --user -u elastic-kibana -f        ║"
-echo "║                                                                                  ║"
-echo "╚══════════════════════════════════════════════════════════════════════════════════╝"

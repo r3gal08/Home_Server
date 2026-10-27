@@ -1,7 +1,6 @@
 #
 # Kibana dashboard container.
 #
-# Replaces the docker-compose "kibana" service.
 #
 # Depends on elastic-setup-passwords completing, which transitively
 # guarantees that es01 is healthy AND the kibana_system password is set.
@@ -14,29 +13,27 @@ After=elastic-setup-passwords.service
 Requires=elastic-setup-passwords.service
 
 [Container]
-# Wolfi variant, matching compose
+# Wolfi variant (security, man)
 Image=docker.elastic.co/kibana/kibana-wolfi:9.5.5
 ContainerName=kibana
 
 # ELASTICSEARCH_PASSWORD (= KIBANA_PASSWORD) is loaded from the env file
 EnvironmentFile=/etc/containers/systemd/users/elastic.env
 
-# TODO: Add to kibana.yml and auto-gen
-# Encryption keys for Kibana saved objects, reporting, and security
-# Set these to real 32+ character random strings in production
-Environment=XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=
-Environment=XPACK_REPORTING_ENCRYPTIONKEY=
-Environment=XPACK_SECURITY_ENCRYPTIONKEY=
-
 # ---- Volumes ----
-Volume=/etc/containers/systemd/users/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+# kibana.yml mounted read-write (:z) so entrypoint can append generated encryption keys on first start
+Volume=/etc/containers/systemd/users/kibana.yml:/usr/share/kibana/config/kibana.yml:z
 Volume=elastic-certs.volume:/usr/share/kibana/config/certs:ro
 Volume=elastic-kibanadata.volume:/usr/share/kibana/data
+Volume=/etc/containers/systemd/users/elastic-scripts/kibana-entrypoint:/scripts/kibana-entrypoint:ro
+
+# Entrypoint script: generates encryption keys via `kibana-encryption-keys` if missing, then starts Kibana
+Exec=/bin/bash /scripts/kibana-entrypoint
 
 # ---- Network ----
 Network=elastic.network
 
-# ---- Port mapping (was ${KIBANA_PORT}:5601 in compose) ----
+# ---- Port mapping ----
 PublishPort=5601:5601
 
 # ---- Resource limits ----
