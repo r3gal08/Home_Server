@@ -32,7 +32,8 @@ Environment=PLEX_CLAIM=<Can be generated here: https://plex.tv/claim>
 Volume=plex-config.volume:/config
 
 # Media mapped as read-only with shared SELinux labeling to protect host files
-Volume=/media/:/media:ro,z
+# TODO: User could be determined by UID var likely...
+Volume=/home/admin/media:/media:ro,z
 
 # ---- Network ----
 # Bypasses bridge networking to sit directly on the host interface
