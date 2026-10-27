@@ -32,7 +32,7 @@ EnvironmentFile=/etc/containers/systemd/users/elastic.env
 Volume=elastic-certs.volume:/usr/share/elasticsearch/config/certs
 
 # Bind-mount the setup script (read-only; pre-labeled with container_file_t)
-Volume=/etc/containers/systemd/users/elastic-scripts/setup-certs.sh:/scripts/setup-certs.sh:ro
+Volume=/etc/containers/systemd/users/elastic-scripts/setup-certs:/scripts/setup-certs:ro
 
 # Destination on the hypervisor (host) to export Fleet Server & CA certificates
 Volume=/etc/containers/systemd/users/fleet-certs:/fleet-certs:Z
@@ -46,7 +46,7 @@ Network=elastic.network
 User=0
 
 # Override the container's default entrypoint to run our script
-Exec=/bin/bash /scripts/setup-certs.sh
+Exec=/bin/bash /scripts/setup-certs
 
 [Service]
 # oneshot = systemd waits for the process to exit before marking it "active"

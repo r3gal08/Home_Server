@@ -15,11 +15,11 @@ elasticsearch/quadlets/
 ├── elastic-kibana.container           # Kibana dashboard (long-running)
 ├── kibana.yml                         # Kibana configuration
 ├── scripts/
-│   ├── setup-certs.sh                 # Cert generation & host export logic
-│   ├── setup-passwords.sh             # Password setup logic
+│   ├── setup-certs                    # Cert generation & host export logic
+│   ├── setup-passwords                # Password setup logic
+│   ├── kibana-entrypoint              # Kibana startup & key generation wrapper
 │   ├── install_fleet_server           # Fleet server installer helper
-│   ├── install_agent                  # Elastic agent installer helper
-│   └── elastic_cert_gen               # (Deprecated) Manual cert extraction fallback
+│   └── install_agent                  # Elastic agent installer helper
 └── install.sh                         # Installs Quadlets into /etc/containers/systemd/users/
 ```
 

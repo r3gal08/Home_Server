@@ -86,10 +86,10 @@ chmod 640 "${QUADLET_DIR}/elastic.env"
 # Copy and mark scripts executable, set SELinux label for container access
 echo ""
 echo "  Copying helper scripts..."
-cp -v "${SCRIPT_DIR}/scripts/setup-certs.sh"         "${SCRIPTS_DIR}/"
-cp -v "${SCRIPT_DIR}/scripts/setup-passwords.sh"     "${SCRIPTS_DIR}/"
+cp -v "${SCRIPT_DIR}/scripts/setup-certs"         "${SCRIPTS_DIR}/"
+cp -v "${SCRIPT_DIR}/scripts/setup-passwords"     "${SCRIPTS_DIR}/"
 cp -v "${SCRIPT_DIR}/scripts/kibana-entrypoint"   "${SCRIPTS_DIR}/"
-chmod 755 "${SCRIPTS_DIR}"/*.sh
+chmod 755 "${SCRIPTS_DIR}"/*
 chown -R "${TARGET_USER}:${TARGET_USER}" "${SCRIPTS_DIR}"
 # Pre-label scripts with container_file_t so rootless containers can read them without lsetxattr errors
 chcon -R -t container_file_t "${SCRIPTS_DIR}" 2>/dev/null || true
