@@ -1,0 +1,8 @@
+[Unit]
+Description=Minecraft Server Data Volume
+
+[Volume]
+VolumeName=mc-data
+
+[Install]
+WantedBy=default.target

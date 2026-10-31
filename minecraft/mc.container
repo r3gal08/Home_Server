@@ -1,0 +1,41 @@
+[Unit]
+Description=Minecraft Java Edition Server
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=docker.io/itzg/minecraft-server:latest
+ContainerName=minecraft
+
+# ---- Environment Variables ----
+# Mojang requires EULA acceptance to boot
+Environment=EULA=TRUE
+# The itzg image uses UID/GID instead of PUID/PGID
+Environment=UID=1000
+Environment=GID=1000
+
+# ---- Server Settings ----
+Environment=VERSION=LATEST
+# PaperMC provides significantly better performance than Vanilla
+Environment=TYPE=PAPER
+# Restrict the Java heap size to 2GB to prevent out-of-memory crashes
+Environment=MEMORY=5G
+
+# ---- Volumes & Networking ----
+Volume=mc-data.volume:/data
+# Standard Minecraft Java port
+PublishPort=25565:25565
+
+# ---- Resource Limits ----
+# The Podman hard limit MUST be higher than the Java heap (MEMORY=2G)
+# to account for JVM overhead 
+# Ex: Thread stacks, garbage collection processing, and native C++ libraries
+PodmanArgs=--memory 6g
+
+[Service]
+Restart=on-failure
+RestartSec=10s
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target
