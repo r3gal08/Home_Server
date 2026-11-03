@@ -1,27 +1,28 @@
 [Unit]
-Description=Minecraft Java Edition Server
+Description=Minecraft Java Edition Fabric (modded) Server
 After=network-online.target
 Wants=network-online.target
 
 [Container]
 Image=docker.io/itzg/minecraft-server:latest
-ContainerName=minecraft
+ContainerName=mc
 
 # ---- Environment Variables ----
 # Mojang requires EULA acceptance to boot
 Environment=EULA=TRUE
-# The itzg image uses UID/GID instead of PUID/PGID
-Environment=UID=1000
-Environment=GID=1000
+Environment=UID=0
+Environment=GID=0
 
 # ---- Server Settings ----
 Environment=VERSION=LATEST
-Environment=TYPE=PAPER
+Environment=TYPE=FABRIC
+Environment=MODRINTH_PROJECTS=fabric-api
 # Restrict the Java heap size to 5GB to prevent out-of-memory crashes
 Environment=MEMORY=5G
 
 # ---- Volumes & Networking ----
 Volume=mc-data.volume:/data
+Volume=/etc/containers/systemd/users/mc-configs/server.properties:/data/server.properties:Z
 # Standard Minecraft Java port
 PublishPort=25565:25565
 
