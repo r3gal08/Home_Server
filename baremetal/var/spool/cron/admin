@@ -1,0 +1,2 @@
+# Note: Never edit this file directly. Use "cron -e" as the admin user
+*/5 * * * * /usr/local/bin/duck >/dev/null 2>&1

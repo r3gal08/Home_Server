@@ -1,0 +1,4 @@
+#!/bin/bash
+DOMAIN=""
+TOKEN=""
+echo url="https://www.duckdns.org/update?domains=$DOMAIN&token=$TOKEN&ip=" | curl -o /var/log/duckdns/duck.log -K -

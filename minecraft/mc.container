@@ -16,9 +16,8 @@ Environment=GID=1000
 
 # ---- Server Settings ----
 Environment=VERSION=LATEST
-# PaperMC provides significantly better performance than Vanilla
 Environment=TYPE=PAPER
-# Restrict the Java heap size to 2GB to prevent out-of-memory crashes
+# Restrict the Java heap size to 5GB to prevent out-of-memory crashes
 Environment=MEMORY=5G
 
 # ---- Volumes & Networking ----
@@ -27,7 +26,7 @@ Volume=mc-data.volume:/data
 PublishPort=25565:25565
 
 # ---- Resource Limits ----
-# The Podman hard limit MUST be higher than the Java heap (MEMORY=2G)
+# The Podman hard limit MUST be higher than the Java heap (MEMORY=5G)
 # to account for JVM overhead 
 # Ex: Thread stacks, garbage collection processing, and native C++ libraries
 PodmanArgs=--memory 6g
