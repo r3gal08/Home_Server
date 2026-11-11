@@ -1,0 +1,23 @@
+#
+# Jellyfin separates its cache (transcoder temp files, image thumbnail caches) from its config (database, user settings, plugins). 
+# This is a best practice because:
+#   1. You can back up /config without including gigabytes of throwaway transcoder artifacts.
+#   2. You can wipe the cache volume to reclaim disk space without losing settings.
+#
+# Plex makes a poor design decision by not doing this, using a a monolithic deployment convention. Bad job Plex.
+#
+# Examples of Transcoding ephemeral files:
+#   - Chunked .ts video segments streamed to the client
+#   - Thumbnail/image tiles generated from video frames
+#   - Cached subtitle burn-ins
+#   - Partial re-encoded segments ready to serve
+#
+
+[Unit]
+Description=Jellyfin Transcoding Cache Volume
+
+[Volume]
+VolumeName=jellyfin-cache
+
+[Install]
+WantedBy=default.target

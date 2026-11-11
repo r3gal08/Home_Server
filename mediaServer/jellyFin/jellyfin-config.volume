@@ -1,0 +1,8 @@
+[Unit]
+Description=Jellyfin Configuration and Metadata Volume
+
+[Volume]
+VolumeName=jellyfin-config
+
+[Install]
+WantedBy=default.target
