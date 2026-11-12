@@ -1,7 +1,6 @@
 #
 # Jellyfin Media Server container.
 #
-# Key architectural notes:
 #   - Network: Uses host networking for local network discovery (DLNA/SSDP),
 #     matching the Plex setup. Jellyfin's default web UI port is 8096 (HTTP)
 #     and 8920 (HTTPS), both exposed directly on the host interface.
@@ -9,10 +8,6 @@
 #     explicitly passes the hypervisor render device through for hardware
 #     acceleration (VAAPI). Jellyfin uses VAAPI natively on Linux rather
 #     than QuickSync — the same /dev/dri device, different codec path.
-#   - Image: Uses the official Jellyfin image rather than LinuxServer.io.
-#     This means no PUID/PGID env vars — the container runs as an internal
-#     jellyfin user by default. File permissions on bind mounts must allow
-#     read access for UID 1000 (the default inside the container).
 #
 
 [Unit]
