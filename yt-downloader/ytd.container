@@ -1,0 +1,34 @@
+#
+# YouTube Downloader (yt-dlp) On-Demand & Scheduled Service
+#
+# Listens for a UDP trigger packet on port 9999 and runs a scheduled daily download at 12:00 AM.
+#
+
+[Unit]
+Description=YouTube Downloader On-Demand & Scheduled Service
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=localhost/ytj:latest
+ContainerName=ytd
+
+# Match server timezone so 12:00 AM is your local midnight, not UTC
+Environment=TZ=America/Halifax
+
+# Retain host UID/GID so downloaded files are owned by the admin user on the host
+UserNS=keep-id
+
+# ---- Volumes ----
+Volume=/home/admin/media/Youtube:/downloads:z
+Volume=/home/admin/yt-downloader/config:/config:ro,Z
+
+# ---- UDP Port ----
+PublishPort=9998:9998/udp
+
+[Service]
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=default.target
