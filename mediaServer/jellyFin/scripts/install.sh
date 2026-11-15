@@ -56,3 +56,6 @@ chmod 640 \
   "${QUADLET_DIR}/jellyfin.container" \
   "${QUADLET_DIR}/jellyfin-config.volume" \
   "${QUADLET_DIR}/jellyfin-cache.volume"
+
+echo ""
+echo "==> Installation complete!"
