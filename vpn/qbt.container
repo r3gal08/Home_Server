@@ -1,0 +1,54 @@
+#
+# qBittorrent-nox (headless) container routed through Gluetun VPN.
+#
+# Key architectural notes:
+#   - Network: This container does NOT have its own network stack. It uses
+#     Network=container:gluetun to share Gluetun's network namespace entirely.
+#     All traffic (WebUI, torrent peers, DNS) is forced through the VPN tunnel.
+#     If the VPN drops, this container has zero network connectivity (kill switch).
+#   - Ports: Because this container shares Gluetun's network, any ports that need
+#     to be reachable from the LAN (like the WebUI on 8080) must be published
+#     on the GLUETUN container, not here.
+#   - WebUI: Access at http://<server-ip>:8080 after both containers are running.
+#     Default credentials are printed to the qBittorrent container logs on first boot.
+#   - Downloads: Landed at /home/admin/Downloads on the host, writable by the container.
+#
+
+[Unit]
+Description=qBittorrent (headless, VPN-routed via Gluetun)
+After=glt.service
+Requires=glt.service
+
+[Container]
+Image=lscr.io/linuxserver/qbittorrent:latest
+ContainerName=qbt
+
+# ---- Environment Variables ----
+Environment=PUID=0
+Environment=PGID=0
+Environment=TZ=America/Halifax
+Environment=WEBUI_PORT=8080
+
+# ---- Volumes ----
+# Config (settings, resume data, logs) in a named volume for persistence
+Volume=qbt-data.volume:/config
+
+# Downloads directory on host — writable, SELinux shared label
+Volume=/home/admin/Downloads:/Downloads:z
+
+# ---- Network ----
+# Share Gluetun's network namespace — all traffic goes through the VPN tunnel.
+# This is the equivalent of Docker's network_mode: "container:gluetun".
+# Do NOT add PublishPort here; ports are published on Gluetun's container.
+Network=container:glt
+
+# ---- Resource Limits ----
+PodmanArgs=--memory 2g
+
+[Service]
+Restart=on-failure
+RestartSec=10s
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,2 @@
+ #!/bin/bash
+ podman exec glt wget -qO- https://am.i.mullvad.net/connected

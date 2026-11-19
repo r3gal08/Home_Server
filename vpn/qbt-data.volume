@@ -1,0 +1,8 @@
+[Unit]
+Description=qBittorrent Configuration Volume
+
+[Volume]
+VolumeName=qbt-data
+
+[Install]
+WantedBy=default.target

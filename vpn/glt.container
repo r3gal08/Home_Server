@@ -1,0 +1,64 @@
+#
+# Gluetun VPN container (Mullvad / WireGuard).
+#
+# Key architectural notes:
+#   - Purpose: This container establishes a WireGuard VPN tunnel through Mullvad.
+#     It acts as a network gateway — any container that sets Network=container:gluetun
+#     will have ALL its traffic routed through this tunnel. If the tunnel drops,
+#     traffic stops entirely (built-in kill switch).
+#   - Kill Switch: Gluetun implements a kill switch via iptables rules inside
+#     the container's network namespace. If the VPN connection drops, all outbound
+#     traffic is blocked automatically — no configuration needed.
+#   - Ports: Because qBittorrent shares this container's network namespace,
+#     qBittorrent's WebUI port (8080) must be published HERE, not on qBittorrent.
+#   - Device: /dev/net/tun is the Linux kernel's TUN device, required by WireGuard
+#     to create the virtual network interface for the encrypted tunnel.
+#   - Credentials: WIREGUARD_PRIVATE_KEY and WIREGUARD_ADDRESSES must be obtained
+#     from Mullvad's WireGuard config generator (https://mullvad.net/en/account/wireguard-config).
+#
+
+[Unit]
+Description=Gluetun VPN Client (Mullvad WireGuard)
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=docker.io/qmcgaw/gluetun:latest
+ContainerName=glt
+
+# ---- Capabilities & Devices ----
+# NET_ADMIN: Required to create/manage the WireGuard tunnel interface and iptables rules
+# /dev/net/tun: The kernel TUN device that WireGuard uses to create its virtual interface
+AddCapability=NET_ADMIN
+PodmanArgs=--device=/dev/net/tun:/dev/net/tun
+
+# ---- Environment Variables ----
+Environment=TZ=America/Halifax
+
+# VPN provider and protocol
+Environment=VPN_SERVICE_PROVIDER=mullvad
+Environment=VPN_TYPE=wireguard
+
+# Mullvad WireGuard credentials
+# Generate these at: https://mullvad.net/en/account/wireguard-config
+# Download a .conf file, then extract PrivateKey and Address from it.
+Environment=WIREGUARD_PRIVATE_KEY=<your_base64_private_key>
+Environment=WIREGUARD_ADDRESSES=<your_assigned_ip/32>
+
+# Server selection — Mullvad servers in Sweden
+Environment=SERVER_COUNTRIES=Sweden
+
+# ---- Ports ----
+# qBittorrent WebUI — published here because qBittorrent shares this network namespace
+PublishPort=8080:8080
+
+# ---- Resource Limits ----
+PodmanArgs=--memory 1g
+
+[Service]
+Restart=on-failure
+RestartSec=10s
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target
