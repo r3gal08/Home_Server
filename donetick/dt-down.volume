@@ -1,0 +1,8 @@
+[Unit]
+Description=Donetick Data Volume
+
+[Volume]
+VolumeName=dt-data
+
+[Install]
+WantedBy=default.target
