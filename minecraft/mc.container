@@ -1,10 +1,11 @@
 [Unit]
-Description=Minecraft Java Edition Fabric (modded) Server
+Description=Minecraft Java Edition HardRock TFC 3 Server
 After=network-online.target
 Wants=network-online.target
 
 [Container]
-Image=docker.io/itzg/minecraft-server:latest
+#Image=docker.io/itzg/minecraft-server:latest
+Image=docker.io/itzg/minecraft-server:java17
 ContainerName=mc
 
 # ---- Environment Variables ----
@@ -14,23 +15,34 @@ Environment=UID=0
 Environment=GID=0
 
 # ---- Server Settings ----
-Environment=VERSION=LATEST
-Environment=TYPE=FABRIC
-Environment=MODRINTH_PROJECTS=fabric-api
-# Restrict the Java heap size to 5GB to prevent out-of-memory crashes
-Environment=MEMORY=5G
+Environment=VERSION=1.18.2
+# Let the container automatically pull the modpack from CurseForge
+# Locked directly to Forge. No CurseForge scripts will run.
+#Environment=TYPE=FORGE
+Environment=TYPE=AUTO_CURSEFORGE
+Environment=CF_SLUG=terrafirmacraft-hardrock
+Environment=CF_MODPACK_ZIP=/downloads/HTFC3-1.6.3c.zip
+Environment=CF_FORCE_INCLUDE_MODS=iceberg,advancement-plaques
+Environment=CF_FORCE_SYNCHRONIZE=true
+#Environment=CF_EXCLUDE_MODS=QuestPlaques,iceberg,advancementplaques
+
+# HardRock requires a larger heap. Increased from 5G to 8G.
+Environment=MEMORY=8G
+# Recommended JVM arguments for heavy 1.18+ Forge modpacks
+#Environment=JVM_OPTS=-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=32M -XX:G1ReservePercent=15 -XX:G1InitiatingHeapOccupancyPercent=20
+
+Environment="JVM_XX_OPTS=-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=32M -XX:G1ReservePercent=15 -XX:InitiatingHeapOccupancyPercent=20"
 
 # ---- Volumes & Networking ----
 Volume=mc-data.volume:/data
-Volume=/etc/containers/systemd/users/mc-configs/server.properties:/data/server.properties:Z
+#Volume=/etc/containers/systemd/users/mc-configs/server.properties:/data/server.properties:Z
+Volume=/home/admin/minecraft-downloads:/downloads:Z
 # Standard Minecraft Java port
 PublishPort=25565:25565
 
 # ---- Resource Limits ----
-# The Podman hard limit MUST be higher than the Java heap (MEMORY=5G)
-# to account for JVM overhead 
-# Ex: Thread stacks, garbage collection processing, and native C++ libraries
-PodmanArgs=--memory 6g
+# The Podman hard limit bumped to 10G to account for the 8G Java heap + JVM overhead
+PodmanArgs=--memory 10g
 
 [Service]
 Restart=on-failure
