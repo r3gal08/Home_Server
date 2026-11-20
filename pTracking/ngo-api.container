@@ -1,0 +1,38 @@
+#
+# Nightlio API backend container.
+# Part of the ngo pod (shares localhost and networking with ngo-web).
+#
+
+[Unit]
+Description=Nightlio API Backend
+After=ngo-pod.service
+Requires=ngo-pod.service
+
+[Container]
+Image=ghcr.io/shirsakm/nightlio-api:latest
+ContainerName=ngo-api
+Pod=ngo.pod
+
+# ---- Environment Variables ----
+Environment=SECRET_KEY=change-me
+Environment=JWT_SECRET=change-me-too
+Environment=CORS_ORIGINS=*
+Environment=ENABLE_GOOGLE_OAUTH=0
+Environment=ENABLE_MOOD_MUSIC=0
+Environment=DEFAULT_SELF_HOST_ID=selfhost_default_user
+Environment=DATABASE_PATH=/app/data/nightlio.db
+Environment=PORT=5000
+
+# ---- Volumes ----
+Volume=ngo-data.volume:/app/data
+
+# ---- Resource Limits ----
+PodmanArgs=--memory 1g
+
+[Service]
+Restart=always
+RestartSec=10s
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target

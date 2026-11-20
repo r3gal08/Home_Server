@@ -77,3 +77,6 @@ chmod 640 \
   "${QUADLET_DIR}/dt.container" \
   "${QUADLET_DIR}/dt-config.volume" \
   "${QUADLET_DIR}/dt-data.volume"
+
+# Load required kernel modules for gluetun (tun, wireguard) 
+printf 'tun\nwireguard\n' | sudo tee /etc/modules-load.d/gluetun.conf

@@ -1,0 +1,25 @@
+#
+# Nightlio Web Frontend container.
+# Part of the ngo pod (shares network with ngo-api, proxies /api -> http://api:5000 via loopback).
+#
+
+[Unit]
+Description=Nightlio Web Frontend
+After=ngo-api.service
+Requires=ngo-api.service
+
+[Container]
+Image=ghcr.io/shirsakm/nightlio-frontend:latest
+ContainerName=ngo-web
+Pod=ngo.pod
+
+# ---- Resource Limits ----
+PodmanArgs=--memory 512m
+
+[Service]
+Restart=always
+RestartSec=10s
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target

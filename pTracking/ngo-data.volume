@@ -1,0 +1,8 @@
+[Unit]
+Description=Nightlio SQLite Data Volume
+
+[Volume]
+VolumeName=ngo-data
+
+[Install]
+WantedBy=default.target

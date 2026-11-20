@@ -38,7 +38,6 @@ Volume=/home/admin/Downloads:/Downloads:z
 
 # ---- Network ----
 # Share Gluetun's network namespace — all traffic goes through the VPN tunnel.
-# This is the equivalent of Docker's network_mode: "container:gluetun".
 # Do NOT add PublishPort here; ports are published on Gluetun's container.
 Network=container:glt
 

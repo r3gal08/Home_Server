@@ -1,0 +1,12 @@
+[Unit]
+Description=Nightlio Mood Tracker Pod
+After=network-online.target
+Wants=network-online.target
+
+[Pod]
+PodName=ngo
+PublishPort=5050:80
+PodmanArgs=--add-host api:127.0.0.1
+
+[Install]
+WantedBy=default.target
