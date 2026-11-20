@@ -1,0 +1,37 @@
+[Unit]
+Description=Brett and Holly's Chores
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=docker.io/donetick/donetick:latest
+ContainerName=dt
+
+# ---- Environment Variables ----
+Environment=DT_ENV=selfhosted
+Environment=DT_SQLITE_PATH=/donetick-data/donetick.db
+Environment=DT_JWT_SECRET=<gen_this_shit>
+Environment=TZ=Etc/UTC
+
+# ---- Volumes & Networking ----
+Volume=dt-data.volume:/donetick-data
+Volume=dt-config.volume:/config
+PublishPort=2021:2021
+
+# ---- Healthcheck ----
+HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:2021/api/v1/health || exit 1
+HealthInterval=1m
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=1m
+
+# ---- Resource Limits ----
+PodmanArgs=--memory 2g
+
+[Service]
+Restart=always
+RestartSec=10s
+TimeoutStartSec=300
+
+[Install]
+WantedBy=default.target

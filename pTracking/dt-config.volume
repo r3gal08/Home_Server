@@ -1,0 +1,8 @@
+[Unit]
+Description=Donetick Config Volume
+
+[Volume]
+VolumeName=dt-config
+
+[Install]
+WantedBy=default.target
